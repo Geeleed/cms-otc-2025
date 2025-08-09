@@ -131,6 +131,8 @@ nav {
     input,
     button {
       width: 100%;
+    }
+    label {
       font-weight: bold;
     }
     input {
@@ -196,7 +198,8 @@ nav {
   padding: 0;
 }
 
-input {
+input,
+textarea {
   box-shadow: 4px 4px black;
   outline: none;
 }
@@ -217,14 +220,21 @@ input {
     flex-direction: column;
     label,
     input,
+    textarea,
     button {
       width: 100%;
+    }
+    label {
       font-weight: bold;
     }
+    textarea,
     input {
       padding: 0.5rem 1rem;
       border: 2px solid black;
       outline: none;
+    }
+    textarea {
+      resize: vertical;
     }
     button {
       margin-top: 1rem;
@@ -326,4 +336,60 @@ input {
 }
 footer {
   font-weight: bold;
+}
+
+.page-verify-change-password__container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fdfdfd;
+}
+
+.page-verify-change-password__card {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+}
+
+.page-verify-change-password__title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.page-verify-change-password__text {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.page-verify-change-password__button {
+  background-color: #e97132;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.page-verify-change-password__button:hover {
+  background-color: #d36026;
+}
+
+.page-verify-change-password__link {
+  color: #e97132;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.page-verify-change-password__link + .page-verify-change-password__link {
+  margin-left: 10px;
 }

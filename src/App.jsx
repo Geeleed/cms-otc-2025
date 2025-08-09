@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import bg from "./assets/images/bg.svg";
+import { readIpAddress } from "./scripts/utils";
 
 export default function App() {
   const [title, setTitle] = useState("ตรวจสอบ OTC");
@@ -9,15 +10,42 @@ export default function App() {
   const [checkOtc, setCheckOtc] = useState("");
   const [organization, setOrganization] = useState("");
   const [organizationOtc, setOrganizationOtc] = useState("");
-  const [reqOtcForm, setReqOtcForm] = useState({ email: "", password: "" });
-  const [changePasswordForm, setChangePasswordForm] = useState({
+
+  const initReqOtcForm = { email: "", password: "" };
+  const initReqRegisterForm = {
+    name: "",
+    email: "",
+    tel: "",
+    description: "",
+  };
+  const initChangePasswordForm = {
     email: "",
     newPassword: "",
     confirmPassword: "",
-  });
+  };
+
+  const [reqOtcForm, setReqOtcForm] = useState(initReqOtcForm);
+  const [reqRegisterForm, setReqRegisterForm] = useState(initReqRegisterForm);
+  const [changePasswordForm, setChangePasswordForm] = useState(
+    initChangePasswordForm
+  );
+
   const [labelButtonSubmitChangePassword, setLabelButtonSubmitChangePassword] =
     useState("ตกลง");
+  const [labelButtonSubmitReqRegister, setLabelButtonSubmitReqRegister] =
+    useState("ตกลง");
   const [reqOtcData, setReqOtcData] = useState();
+
+  const refReqOtcFormEmail = useRef();
+  const refReqOtcFormPassword = useRef();
+
+  const refChangePasswordFormEmail = useRef();
+  const refChangePasswordFormNewPassword = useRef();
+  const refChangePasswordFormConfirmPassword = useRef();
+
+  const refReqRegisterFormName = useRef();
+  const refReqRegisterFormEmail = useRef();
+
   const buttonList = [
     {
       label: "ตรวจสอบ OTC",
@@ -41,11 +69,20 @@ export default function App() {
     },
   ];
 
-  const onChangeReqOtcForm = (statement, value) =>
-    setReqOtcForm((prev) => ({ ...prev, [statement]: value }));
+  const onChangeReqOtcForm = (event) => {
+    const { name, value } = event.target;
+    setReqOtcForm((prev) => ({ ...prev, [name]: value }));
+  };
 
-  const onChangeChangePasswordForm = (statement, value) =>
-    setChangePasswordForm((prev) => ({ ...prev, [statement]: value }));
+  const onChangeReqRegisterForm = (event) => {
+    const { name, value } = event.target;
+    setReqRegisterForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const onChangeChangePasswordForm = (event) => {
+    const { name, value } = event.target;
+    setChangePasswordForm((prev) => ({ ...prev, [name]: value }));
+  };
 
   const getDatabase = async () => {
     const res = await fetch(
@@ -75,6 +112,11 @@ export default function App() {
   };
 
   const onSubmitReqOtc = async () => {
+    const { email, password } = reqOtcForm;
+
+    if (!email) return refReqOtcFormEmail.current.focus();
+    if (!password) return refReqOtcFormPassword.current.focus();
+
     const res = await fetch(`${process.env.REACT_APP_BASE_URL}/otc`, {
       method: "POST",
       headers: {
@@ -85,38 +127,77 @@ export default function App() {
         password: reqOtcForm.password,
       }),
     }).then((r) => r.json());
-    setReqOtcData(res);
-    const hasData = res?.otc;
-    if (hasData) {
-      setSelection(2.4);
+
+    if (res.status === "success") {
+      setReqOtcData(res);
+      const hasData = res?.otc;
+      if (hasData) {
+        setSelection(2.4);
+      }
+    } else {
+      alert("ข้อมูลไม่ถูกต้อง กรุณาตรวจสอบข้อมูล");
     }
   };
 
   const onSubmitChangePasswordForm = async () => {
     const { email, newPassword, confirmPassword } = changePasswordForm;
+
+    if (!email) return refChangePasswordFormEmail.current.focus();
+    if (!newPassword) return refChangePasswordFormNewPassword.current.focus();
+    if (!confirmPassword)
+      return refChangePasswordFormConfirmPassword.current.focus();
+
+    const ip = await readIpAddress();
     const correctPassword = newPassword === confirmPassword;
     if (correctPassword === false) return;
     const validate = email && newPassword && confirmPassword;
     if (validate === false) return;
-    setLabelButtonSubmitChangePassword((prev) => "กำลังส่งคำขอ...");
+    setLabelButtonSubmitChangePassword("รอสักครู่ กำลังส่งคำขอ...");
     const res = await fetch(
       `${process.env.REACT_APP_BASE_URL}/auth/changePassword`,
       {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email, password: newPassword }),
+        body: JSON.stringify({ email, password: newPassword, ip }),
       }
     ).then((r) => r.json());
     if (res.status === "success") {
-      setLabelButtonSubmitChangePassword(
-        (prev) => "ส่งคำขอสำเร็จ กรุณาตรวจสอบอีเมล"
-      );
+      setChangePasswordForm(initChangePasswordForm);
+      alert("ส่งคำขอสำเร็จ กรุณาตรวจสอบอีเมล ลิงก์มีอายุ 5 นาที");
+    } else {
+      alert("ส่งคำขอล้มเหลว กรุณาลองอีกครั้ง");
     }
-    setLabelButtonSubmitChangePassword((prev) => "ตกลง");
+    setLabelButtonSubmitChangePassword("ตกลง");
+  };
+
+  const onSubmitReqRegisterForm = async () => {
+    const { name, email, tel, description } = reqRegisterForm;
+
+    if (!name) return refReqRegisterFormName.current.focus();
+    if (!email) return refReqRegisterFormEmail.current.focus();
+
+    setLabelButtonSubmitReqRegister("รอสักครู่ กำลังส่งคำขอ...");
+
+    const result = await fetch(
+      `${process.env.REACT_APP_BASE_URL}/otc/requestRegister`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name, email, tel, description }),
+      }
+    ).then((r) => r.json());
+
+    if (result.status === "success") {
+      setReqRegisterForm(initReqRegisterForm);
+      alert("ส่งข้อมูลสำเร็จ");
+    } else {
+      alert("เกิดข้อผิดพลาด กรุณาลองอีกครั้ง");
+    }
+    setLabelButtonSubmitReqRegister("ตกลง");
   };
 
   const onExitReqOtc = () => {
-    setReqOtcForm({ email: "", password: "" });
+    setReqOtcForm(initReqOtcForm);
     setSelection(2);
   };
 
@@ -176,19 +257,21 @@ export default function App() {
           {selection === 2 && (
             <div className="selection-2">
               <div>
-                <label>อีเมล</label>
+                <label>อีเมล *</label>
                 <input
-                  onChange={(e) => onChangeReqOtcForm("email", e.target.value)}
+                  onChange={onChangeReqOtcForm}
+                  ref={refReqOtcFormEmail}
+                  name="email"
                   type="email"
                   placeholder="example@mail.com"
                 />
               </div>
               <div>
-                <label>รหัสผ่าน</label>
+                <label>รหัสผ่าน *</label>
                 <input
-                  onChange={(e) =>
-                    onChangeReqOtcForm("password", e.target.value)
-                  }
+                  onChange={onChangeReqOtcForm}
+                  ref={refReqOtcFormPassword}
+                  name="password"
                   type="password"
                   placeholder="******"
                 />
@@ -249,36 +332,33 @@ export default function App() {
           {selection === 2.5 && (
             <div className="selection-2">
               <div>
-                <label>อีเมล</label>
+                <label>อีเมล *</label>
                 <input
-                  onChange={(e) =>
-                    onChangeChangePasswordForm("email", e.target.value)
-                  }
+                  onChange={onChangeChangePasswordForm}
+                  ref={refChangePasswordFormEmail}
+                  name="email"
                   value={changePasswordForm.email}
                   type="email"
                   placeholder="example@mail.com"
                 />
               </div>
               <div>
-                <label>รหัสผ่านใหม่</label>
+                <label>รหัสผ่านใหม่ *</label>
                 <input
-                  onChange={(e) =>
-                    onChangeChangePasswordForm("newPassword", e.target.value)
-                  }
+                  onChange={onChangeChangePasswordForm}
+                  ref={refChangePasswordFormNewPassword}
+                  name="newPassword"
                   value={changePasswordForm.newPassword}
                   type="password"
                   placeholder="******"
                 />
               </div>
               <div>
-                <label>ยืนยันรหัสผ่าน</label>
+                <label>ยืนยันรหัสผ่าน *</label>
                 <input
-                  onChange={(e) =>
-                    onChangeChangePasswordForm(
-                      "confirmPassword",
-                      e.target.value
-                    )
-                  }
+                  onChange={onChangeChangePasswordForm}
+                  ref={refChangePasswordFormConfirmPassword}
+                  name="confirmPassword"
                   value={changePasswordForm.confirmPassword}
                   type="password"
                   placeholder="******"
@@ -304,19 +384,54 @@ export default function App() {
                 </p>
               </div>
               <div>
-                <label>ชื่อ</label>
-                <input type="text" placeholder="geeleed" />
+                <label>ชื่อ *</label>
+                <input
+                  onChange={onChangeReqRegisterForm}
+                  ref={refReqRegisterFormName}
+                  name="name"
+                  value={reqRegisterForm.name}
+                  type="text"
+                  placeholder="geeleed"
+                />
               </div>
               <div>
-                <label>อีเมล</label>
-                <input type="email" placeholder="example@mail.com" />
+                <label>อีเมล *</label>
+                <input
+                  onChange={onChangeReqRegisterForm}
+                  ref={refReqRegisterFormEmail}
+                  name="email"
+                  value={reqRegisterForm.email}
+                  type="email"
+                  placeholder="example@mail.com"
+                />
               </div>
               <div>
                 <label>เบอร์โทร</label>
-                <input type="tel" placeholder="0812345678" />
+                <input
+                  onChange={onChangeReqRegisterForm}
+                  name="tel"
+                  value={reqRegisterForm.tel}
+                  type="tel"
+                  placeholder="0812345678"
+                />
               </div>
               <div>
-                <button className="button-primary-fill">ตกลง</button>
+                <label>รายละเอียด</label>
+                <textarea
+                  onChange={onChangeReqRegisterForm}
+                  name="description"
+                  value={reqRegisterForm.description}
+                  rows={4}
+                  placeholder="กรอกรายละเอียดเพื่อการตรวจสอบเบื้องต้น"
+                />
+              </div>
+              <div>
+                <button
+                  onClick={onSubmitReqRegisterForm}
+                  className="button-primary-fill"
+                >
+                  {labelButtonSubmitReqRegister}
+                </button>
               </div>
             </div>
           )}
