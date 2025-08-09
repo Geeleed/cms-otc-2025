@@ -44,7 +44,6 @@ h2 {
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  gap: 1rem;
   margin: 1rem auto;
 }
 
@@ -392,4 +391,9 @@ footer {
 
 .page-verify-change-password__link + .page-verify-change-password__link {
   margin-left: 10px;
+}
+
+.recommend-message-request-otc {
+  font-size: 0.8rem;
+  text-align: center;
 }

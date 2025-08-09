@@ -111,7 +111,9 @@ export default function App() {
     }
   };
 
-  const onSubmitReqOtc = async () => {
+  const onSubmitReqOtc = async (event) => {
+    event.preventDefault();
+
     const { email, password } = reqOtcForm;
 
     if (!email) return refReqOtcFormEmail.current.focus();
@@ -139,7 +141,9 @@ export default function App() {
     }
   };
 
-  const onSubmitChangePasswordForm = async () => {
+  const onSubmitChangePasswordForm = async (event) => {
+    event.preventDefault();
+
     const { email, newPassword, confirmPassword } = changePasswordForm;
 
     if (!email) return refChangePasswordFormEmail.current.focus();
@@ -170,7 +174,9 @@ export default function App() {
     setLabelButtonSubmitChangePassword("ตกลง");
   };
 
-  const onSubmitReqRegisterForm = async () => {
+  const onSubmitReqRegisterForm = async (event) => {
+    event.preventDefault();
+
     const { name, email, tel, description } = reqRegisterForm;
 
     if (!name) return refReqRegisterFormName.current.focus();
@@ -201,11 +207,18 @@ export default function App() {
     setSelection(2);
   };
 
+  const CODE_LENGTH = 4;
+
+  const onChangeCheckOtc = (event) => {
+    const value = event.target.value;
+    setCheckOtc(value.toUpperCase());
+  };
+
   useEffect(() => {
     getDatabase();
   }, []);
   useEffect(() => {
-    if (checkOtc.length === 6) {
+    if (checkOtc.length === CODE_LENGTH) {
       fetchCheckOtc();
     }
   }, [checkOtc]);
@@ -221,19 +234,21 @@ export default function App() {
           {selection === 1 && (
             <div className="selection-1">
               <div>
+                <p className="recommend-message-request-otc">
+                  {`กรุณาขอรหัส OTC ${CODE_LENGTH} หลักจากคู่สายของคุณเพื่อตรวจสอบตัวตน`}
+                </p>
+              </div>
+              <div>
                 <input
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setCheckOtc(value);
-                  }}
-                  maxLength={6}
+                  onChange={onChangeCheckOtc}
+                  maxLength={CODE_LENGTH}
                   value={checkOtc}
                   className="input-check-otc"
                   type="text"
-                  placeholder="131296"
+                  placeholder={"DC96".slice(0, CODE_LENGTH)}
                 />
               </div>
-              {(checkOtc.length === 6 || organizationOtc) && (
+              {(checkOtc.length === CODE_LENGTH || organizationOtc) && (
                 <div className="selection-1__data">
                   {dataFound ? (
                     <div className="data-found">
@@ -255,7 +270,7 @@ export default function App() {
             </div>
           )}
           {selection === 2 && (
-            <div className="selection-2">
+            <form className="selection-2">
               <div>
                 <label>อีเมล *</label>
                 <input
@@ -295,7 +310,7 @@ export default function App() {
                   ตกลง
                 </button>
               </div>
-            </div>
+            </form>
           )}
           {selection === 2.4 && (
             <div className="selection-2">
@@ -330,7 +345,7 @@ export default function App() {
             </div>
           )}
           {selection === 2.5 && (
-            <div className="selection-2">
+            <form className="selection-2">
               <div>
                 <label>อีเมล *</label>
                 <input
@@ -372,10 +387,10 @@ export default function App() {
                   {labelButtonSubmitChangePassword}
                 </button>
               </div>
-            </div>
+            </form>
           )}
           {selection === 3 && (
-            <div className="selection-3">
+            <form className="selection-3">
               <div>
                 <p>
                   การลงทะเบียนจำเป็นต้องยืนยันตัวตนทางกายภาพและมีข้อมูลเพียงพอสำหรับการพิสูจน์ตัวตน
@@ -433,7 +448,7 @@ export default function App() {
                   {labelButtonSubmitReqRegister}
                 </button>
               </div>
-            </div>
+            </form>
           )}
           {selection === 4 && (
             <div className="selection-4">
