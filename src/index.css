@@ -12,6 +12,11 @@
   --primary-a: #e9713222;
 }
 
+::selection {
+  color: black;
+  background-color: var(--primary);
+}
+
 .app {
   position: absolute;
   width: 100%;
@@ -334,7 +339,22 @@ textarea {
   transform: translateX(-50%);
 }
 footer {
-  font-weight: bold;
+  cursor: pointer;
+  a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: bold;
+    text-decoration: none;
+    &:hover {
+      color: var(--primary);
+      text-decoration: underline;
+    }
+  }
+  svg {
+    transform: translateY(-4px) scale(1.2);
+  }
 }
 
 .page-verify-change-password__container {
@@ -396,4 +416,5 @@ footer {
 .recommend-message-request-otc {
   font-size: 0.8rem;
   text-align: center;
+  margin-bottom: 0.5rem;
 }
