@@ -383,7 +383,7 @@ export default function App() {
           {selection === 5 && (
             <div className="selection-5">
               {database.map((el, index) => (
-                <div>
+                <div key={index}>
                   <span>
                     {index + 1}
                     {".) "}
