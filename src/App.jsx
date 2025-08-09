@@ -92,6 +92,8 @@ export default function App() {
   };
 
   const fetchCheckOtc = async () => {
+    setOrganization("");
+    setOrganizationOtc("");
     setDataFound(false);
     const res = await fetch(`${process.env.REACT_APP_BASE_URL}/otc/check`, {
       method: "POST",
