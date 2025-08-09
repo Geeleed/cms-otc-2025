@@ -419,3 +419,29 @@ footer {
   text-align: center;
   margin-bottom: 0.5rem;
 }
+
+@keyframes loop-fade {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.selection-1__searching-otc {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+  width: 100%;
+  margin-top: 4rem;
+  margin-bottom: 2rem;
+  color: var(--primary);
+  animation: loop-fade 1.5s infinite ease;
+}

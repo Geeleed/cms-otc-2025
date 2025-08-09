@@ -30,6 +30,10 @@ export default function App() {
     initChangePasswordForm
   );
 
+  const [isLoadingCheckOtc, setIsLoadingCheckOtc] = useState(false);
+
+  const [labelButtonSubmitReqOtc, setLabelButtonSubmitReqOtc] =
+    useState("ตกลง");
   const [labelButtonSubmitChangePassword, setLabelButtonSubmitChangePassword] =
     useState("ตกลง");
   const [labelButtonSubmitReqRegister, setLabelButtonSubmitReqRegister] =
@@ -91,29 +95,6 @@ export default function App() {
     setDatabase(res.map((el) => ({ organization: el })));
   };
 
-  const fetchCheckOtc = async () => {
-    setOrganization("");
-    setOrganizationOtc("");
-    setDataFound(false);
-    const res = await fetch(`${process.env.REACT_APP_BASE_URL}/otc/check`, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({ otc: checkOtc }),
-    }).then((r) => r.json());
-    const temp = res?.organization;
-    if (temp) {
-      setOrganization(temp);
-      setOrganizationOtc(checkOtc);
-      setDataFound(true);
-    } else {
-      setOrganization("");
-      setOrganizationOtc("");
-      setDataFound(false);
-    }
-  };
-
   const onSubmitReqOtc = async (event) => {
     event.preventDefault();
 
@@ -121,6 +102,8 @@ export default function App() {
 
     if (!email) return refReqOtcFormEmail.current.focus();
     if (!password) return refReqOtcFormPassword.current.focus();
+
+    setLabelButtonSubmitReqOtc("กำลังสร้าง OTC...");
 
     const res = await fetch(`${process.env.REACT_APP_BASE_URL}/otc`, {
       method: "POST",
@@ -142,6 +125,8 @@ export default function App() {
     } else {
       alert("ข้อมูลไม่ถูกต้อง กรุณาตรวจสอบข้อมูล");
     }
+
+    setLabelButtonSubmitReqOtc("ตกลง");
   };
 
   const onSubmitChangePasswordForm = async (event) => {
@@ -212,19 +197,41 @@ export default function App() {
 
   const CODE_LENGTH = 4;
 
-  const onChangeCheckOtc = (event) => {
+  const onChangeCheckOtc = async (event) => {
     const value = event.target.value;
-    setCheckOtc(value.toUpperCase());
+    const VALUE = value.toUpperCase();
+    setCheckOtc(VALUE);
+    if (VALUE.length === CODE_LENGTH) {
+      setIsLoadingCheckOtc(true);
+      const res = await fetch(`${process.env.REACT_APP_BASE_URL}/otc/check`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ otc: VALUE }),
+      }).then((r) => r.json());
+      const temp = res?.organization;
+      if (res.status === "success" && temp) {
+        setOrganization(temp);
+        setOrganizationOtc(VALUE);
+        setDataFound(true);
+      } else {
+        setOrganization("");
+        setOrganizationOtc("");
+        setDataFound(false);
+      }
+    }
+    setIsLoadingCheckOtc(false);
   };
 
   useEffect(() => {
     getDatabase();
   }, []);
-  useEffect(() => {
-    if (checkOtc.length === CODE_LENGTH) {
-      fetchCheckOtc();
-    }
-  }, [checkOtc]);
+  // useEffect(() => {
+  //   if (checkOtc.length === CODE_LENGTH) {
+  //     fetchCheckOtc();
+  //   }
+  // }, [checkOtc]);
   return (
     <div className="app">
       <div className="bg">
@@ -251,24 +258,30 @@ export default function App() {
                   placeholder={"DC96".slice(0, CODE_LENGTH)}
                 />
               </div>
-              {(checkOtc.length === CODE_LENGTH || organizationOtc) && (
-                <div className="selection-1__data">
-                  {dataFound ? (
-                    <div className="data-found">
-                      <p className="data-found__organization">{organization}</p>
-                      <p className="data-found__text">
-                        {`ข้อมูลนี้จะปรากฏเพียงครั้งเดียวสำหรับ OTC ${organizationOtc}`}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="data-not-found">
-                      <p className="data-not-found__text">ไม่พบข้อมูล</p>
-                      <p className="data-not-found__description">
-                        กรุณาขอ OTC จากคู่สายของคุณอีกครั้งหรือวางสาย
-                      </p>
-                    </div>
-                  )}
-                </div>
+              {isLoadingCheckOtc === false ? (
+                (checkOtc.length === CODE_LENGTH || organizationOtc) && (
+                  <div className="selection-1__data">
+                    {dataFound ? (
+                      <div className="data-found">
+                        <p className="data-found__organization">
+                          {organization}
+                        </p>
+                        <p className="data-found__text">
+                          {`ข้อมูลนี้จะปรากฏเพียงครั้งเดียวสำหรับ OTC ${organizationOtc}`}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="data-not-found">
+                        <p className="data-not-found__text">ไม่พบข้อมูล</p>
+                        <p className="data-not-found__description">
+                          กรุณาขอ OTC จากคู่สายของคุณอีกครั้งหรือวางสาย
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )
+              ) : (
+                <div className="selection-1__searching-otc">กำลังค้นหา..</div>
               )}
             </div>
           )}
@@ -310,7 +323,7 @@ export default function App() {
                   onClick={onSubmitReqOtc}
                   className="button-primary-fill"
                 >
-                  ตกลง
+                  {labelButtonSubmitReqOtc}
                 </button>
               </div>
             </form>
