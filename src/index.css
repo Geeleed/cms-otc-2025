@@ -347,6 +347,7 @@ footer {
     gap: 0.5rem;
     font-weight: bold;
     text-decoration: none;
+    color: black;
     &:hover {
       color: var(--primary);
       text-decoration: underline;
